@@ -1,0 +1,4 @@
+Implementação do jantar dos filósofos em Go  
+Grupo: Edjan Michiles (esvm),   
+       Luiz Reis (lrnn),   
+       Marcela Azevedo (macm3)  
