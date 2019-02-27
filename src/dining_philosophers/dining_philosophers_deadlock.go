@@ -10,7 +10,6 @@ import (
 
 type Fork struct {
 	sync.Mutex
-	Locked bool
 }
 
 type Philosopher struct {
@@ -19,32 +18,30 @@ type Philosopher struct {
 	LeftFork  *Fork
 }
 
-// Eat ... makes the philosopher eat with no deadlocks. If forks are locked, the philosopher wait
+// Eat ... makes the philosopher eat with deadlocks. If forks are locked, the philosopher wait
 func (p *Philosopher) Eat() {
 	for {
 		print(p.id, "is thinking")
-		for {
-			p.LeftFork.Lock()
-			if p.RightFork.Locked {
-				p.LeftFork.Unlock()
-			} else {
-				p.RightFork.Lock()
-				p.RightFork.Locked = true
-				break
-			}
+		print(p.id, fmt.Sprintf("is trying to get fork #%d", p.id))
 
-			sleep(p.id, 100)
-		}
+		p.LeftFork.Lock()
 
+		print(p.id, fmt.Sprintf("get #%d", p.id))
+		print(p.id, fmt.Sprintf("is trying to get fork #%d", (p.id+1)%count))
+
+		p.RightFork.Lock()
+
+		print(p.id, fmt.Sprintf("get #%d", (p.id+1)%count))
 		print(p.id, "is eating")
-		sleep(p.id, 100)
 
-		print(p.id, "finished eating")
+		sleep()
+
 		p.LeftFork.Unlock()
 		p.RightFork.Unlock()
-		p.RightFork.Locked = false
 
-		sleep(p.id, 100)
+		print(p.id, "finished eating")
+
+		sleep()
 	}
 }
 
@@ -52,8 +49,8 @@ func print(id int, doing string) {
 	fmt.Printf("The philosopher %d %s\n", id, doing)
 }
 
-func sleep(id int, amount int) {
-	time.Sleep(time.Millisecond * time.Duration(amount*(id+1)))
+func sleep() {
+	time.Sleep(time.Millisecond * 100)
 }
 
 // Dinner ... start the meet
@@ -62,9 +59,7 @@ func Dinner() {
 	philosophers := make([]*Philosopher, count)
 
 	for i := 0; i < count; i++ {
-		forks[i] = &Fork{
-			Locked: false,
-		}
+		forks[i] = &Fork{}
 	}
 
 	for i := 0; i < count; i++ {
